@@ -34,4 +34,20 @@ describe 'splunk' do
       it { expect { is_expected.to contain_package('splunk') }.to raise_error(Puppet::Error, %r{unsupported osfamily/arch Solaris/sparc}) }
     end
   end
+
+  context 'included along with splunk::forwarder' do
+    let(:facts) do
+      {
+        osfamily:        'Debian',
+        operatingsystem: 'Debian',
+        kernel:          'Linux',
+        architecture:    'amd64'
+      }
+    end
+    let(:pre_condition) { [ 'include splunk::forwarder' ] }
+
+    describe 'fails by default' do
+      it { is_expected.to raise_error(Puppet::Error, %r{allow_dual_install}) }
+    end
+  end
 end

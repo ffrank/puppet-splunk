@@ -177,6 +177,10 @@ class splunk::forwarder (
   # Validate: if both Splunk and Splunk Universal Forwarder are installed on
   # the same system, then they must use different admin ports.
   if (defined(Class['splunk']) and defined(Class['splunk::forwarder'])) {
+    # In general, we don't allow this at all anymore (#61)
+    if ! $splunk::allow_dual_install {
+      fail('Combining classes splunk and splunk::forwarder is not allowed unless the allow_dual_install parameter is passed.')
+    }
     $s_port = $splunk::splunkd_port
     $f_port = $splunk::forwarder::splunkd_port
     if $s_port == $f_port {

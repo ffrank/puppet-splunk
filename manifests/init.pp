@@ -36,6 +36,10 @@
 #   If set to true, will remove any outputs.conf configuration not supplied by
 #   Puppet from the target system. Defaults to false.
 #
+# [*allow_dual_install*]
+#   If set to true, stops the module from failing when both class splunk
+#   and splunk::forwarder are declared in the same manifest. Defaults to false.
+#
 # Actions:
 #
 #   Declares parameters to be consumed by other classes in the splunk module.
@@ -64,6 +68,7 @@ class splunk (
   $purge_server         = false,
   $purge_transforms     = false,
   $purge_web            = false,
+  $allow_dual_install   = false,
 ) inherits splunk::params {
 
   $virtual_service = $server_service
@@ -276,6 +281,10 @@ class splunk (
   # Validate: if both Splunk and Splunk Universal Forwarder are installed on
   # the same system, then they must use different admin ports.
   if (defined(Class['splunk']) and defined(Class['splunk::forwarder'])) {
+    # In general, we don't allow this at all anymore (#61)
+    if ! $allow_dual_install {
+      fail('Combining classes splunk and splunk::forwarder is not allowed unless the allow_dual_install parameter is passed.')
+    }
     $s_port = $splunk::splunkd_port
     $f_port = $splunk::forwarder::splunkd_port
     if $s_port == $f_port {
